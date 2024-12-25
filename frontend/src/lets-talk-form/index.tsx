@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import {
@@ -15,19 +14,11 @@ import {
   Alert,
   CircularProgress,
 } from '@mui/material';
+import {
+  LetsTalkSchemaType,
+  LetsTalkSchema,
+} from '@learnbit/zod-examples.lets-talk-schema';
 
-// 1) Create Zod schema for validation
-const letsTalkSchema = z.object({
-  name: z.string().min(1, { message: 'Name is required' }),
-  email: z.string().email({ message: 'Invalid email address' }),
-  whyWeShouldTalk: z.string().min(1, { message: 'Please provide a reason' }),
-  suggestTime: z.string().min(1, { message: 'Please select a time' }),
-});
-
-// 2) Infer the TypeScript type from the schema
-type LetsTalkFormData = z.infer<typeof letsTalkSchema>;
-
-// 3) Possible times to suggest (could be loaded from an API in real app)
 const possibleTimes = [
   '2024-12-30 10:00 AM',
   '2024-12-30 02:00 PM',
@@ -41,18 +32,16 @@ const LetsTalkForm: React.FC = () => {
     'idle' | 'loading' | 'success' | 'error'
   >('idle');
 
-  // 4) Initialize React Hook Form
   const {
     register,
     handleSubmit,
     formState: { errors },
     reset,
-  } = useForm<LetsTalkFormData>({
-    resolver: zodResolver(letsTalkSchema),
+  } = useForm<LetsTalkSchemaType>({
+    resolver: zodResolver(LetsTalkSchema),
   });
 
-  // 5) Handle form submission
-  const onSubmit = async (data: LetsTalkFormData) => {
+  const onSubmit = async (data: LetsTalkSchemaType) => {
     try {
       setSubmitStatus('loading');
       const response = await fetch('http://localhost:4000/lets-talk', {
@@ -69,7 +58,8 @@ const LetsTalkForm: React.FC = () => {
 
       setSubmitStatus('success');
       reset(); // Reset the form on success
-    } catch (err) {
+    } catch (err: unknown) {
+      console.error(err);
       setSubmitStatus('error');
     }
   };

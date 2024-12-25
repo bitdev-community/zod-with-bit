@@ -2,27 +2,19 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 import { z, ZodError } from 'zod';
-
-// 1) Create the Zod schema
-const letsTalkSchema = z.object({
-  name: z.string().min(1, 'Name is required'),
-  email: z.string().email('Invalid email address'),
-  whyWeShouldTalk: z.string().min(1, 'Reason is required'),
-  suggestTime: z.string().min(1, 'Suggested time is required'),
-});
-
-// 2) TypeScript type for the validated data
-type LetsTalkData = z.infer<typeof letsTalkSchema>;
+import {
+  LetsTalkSchema,
+  LetsTalkSchemaType,
+} from '@learnbit/zod-examples.lets-talk-schema';
 
 const app = express();
 const PORT = 4000;
 
-// 3) Enable CORS and JSON parsing
 app.use(cors());
 app.use(express.json());
 
 // 4) Simple in-memory array to store requests (just for demo)
-const requests: (LetsTalkData & { submittedAt: string })[] = [];
+const requests: (LetsTalkSchemaType & { submittedAt: string })[] = [];
 
 // Add this before the POST route
 app.get('/', (req: Request, res: Response) => {
@@ -34,7 +26,7 @@ app.get('/', (req: Request, res: Response) => {
 app.post('/lets-talk', (req: Request, res: Response) => {
   try {
     // Validate incoming data with Zod
-    const validatedData: LetsTalkData = letsTalkSchema.parse(req.body);
+    const validatedData: LetsTalkSchemaType = LetsTalkSchema.parse(req.body);
 
     // Destructure validated fields
     const { name, email, whyWeShouldTalk, suggestTime } = validatedData;
